@@ -35,16 +35,16 @@ export default function Dashboard() {
         <p className="text-sm text-slate-500">Loading dashboard…</p>
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {stats.map(({ label, value }) => (
-              <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={label} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                 <p className="text-sm font-medium text-slate-500">{label}</p>
-                <p className="mt-3 text-2xl font-bold text-slate-950">{money.format(value || 0)}</p>
+                <p className="mt-3 break-words text-xl font-bold text-slate-950 sm:text-2xl">{money.format(value || 0)}</p>
               </article>
             ))}
           </section>
-          <section className="mt-6 grid gap-4 xl:grid-cols-2">
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="mt-6 grid min-w-0 gap-4 xl:grid-cols-2">
+            <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="font-semibold text-slate-900">Recent transactions</h2>
               {dashboard?.lastTransactions?.length ? (
                 <ul className="mt-4 divide-y divide-slate-100">
@@ -59,7 +59,7 @@ export default function Dashboard() {
                 </ul>
               ) : <p className="mt-4 text-sm text-slate-500">No transactions yet.</p>}
             </article>
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="font-semibold text-slate-900">Expenses by category</h2>
               {dashboard?.expenseByCategory?.length ? (
                 <ul className="mt-4 space-y-3">

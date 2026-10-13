@@ -21,7 +21,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 md:flex">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 md:flex">
       {menuOpen && (
         <button
           aria-label="Close navigation"
@@ -30,7 +30,7 @@ export default function AppLayout() {
         />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col bg-slate-950 px-5 py-6 text-white transition-transform md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 lg:w-64 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <NavLink to="/" className="mb-10 flex items-center gap-3" onClick={() => setMenuOpen(false)}>
           <span className="grid size-10 place-items-center rounded-xl bg-emerald-400 font-bold text-slate-950">E</span>
           <span className="font-semibold">Expense Tracker</span>
@@ -67,7 +67,7 @@ export default function AppLayout() {
           </button>
           <span className="font-semibold">Expense Tracker</span>
         </header>
-        <main className="mx-auto w-full max-w-7xl p-5 sm:p-8">
+        <main className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
