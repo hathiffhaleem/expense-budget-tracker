@@ -6,7 +6,9 @@ import Budgets from './pages/Budgets.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Settings from './pages/Settings.jsx';
 import Transactions from './pages/Transactions.jsx';
+import { DatePeriodProvider } from './context/DatePeriodContext.jsx';
 
 export default function App() {
   return (
@@ -16,10 +18,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
+          <Route element={<DatePeriodProvider><AppLayout /></DatePeriodProvider>}>
             <Route index element={<Dashboard />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="budgets" element={<Budgets />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

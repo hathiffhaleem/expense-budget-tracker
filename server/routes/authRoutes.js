@@ -1,9 +1,11 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { register, login, getMe } = require('../controllers/authController');
+const { register, login, getMe, updateCurrency, updateLanguage, changePassword } = require('../controllers/authController');
 const asyncHandler = require('../middleware/asyncHandler');
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { currencyCodes } = require('../constants/currencies');
+const { languageCodes } = require('../constants/languages');
 
 const router = express.Router();
 
@@ -21,5 +23,12 @@ router.post('/register', [
 
 router.post('/login', [emailRule, body('password').notEmpty().withMessage('Password is required'), validate], asyncHandler(login));
 router.get('/me', protect, getMe);
+router.patch('/me/currency', protect, [body('currency').isIn(currencyCodes).withMessage('Choose a supported currency'), validate], asyncHandler(updateCurrency));
+router.patch('/me/language', protect, [body('language').isIn(languageCodes).withMessage('Choose a supported language'), validate], asyncHandler(updateLanguage));
+router.patch('/me/password', protect, [
+  body('currentPassword').isString().notEmpty().withMessage('Enter your current password'),
+  body('newPassword').isString().isLength({ min: 8, max: 72 }).withMessage('New password must be 8 to 72 characters'),
+  validate
+], asyncHandler(changePassword));
 
 module.exports = router;

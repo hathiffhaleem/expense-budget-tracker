@@ -57,8 +57,24 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  async function updateCurrency(currency) {
+    const { data } = await api.patch('/auth/me/currency', { currency });
+    setUser(data.user);
+    return data.user;
+  }
+
+  async function updateLanguage(language) {
+    const { data } = await api.patch('/auth/me/language', { language });
+    setUser(data.user);
+    return data.user;
+  }
+
+  async function changePassword(passwords) {
+    return api.patch('/auth/me/password', passwords);
+  }
+
   const value = useMemo(
-    () => ({ user, token, loading, login, register, logout }),
+    () => ({ user, token, loading, login, register, logout, updateCurrency, updateLanguage, changePassword }),
     [user, token, loading]
   );
 

@@ -3,14 +3,26 @@ const Transaction = require('../models/Transaction');
 async function getDashboard(req, res) {
   const now = new Date();
   const firstMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+  const dateFilter = { user: req.user._id };
+  if (req.query.startDate || req.query.endDate) {
+    dateFilter.date = {};
+    if (req.query.startDate) {
+      dateFilter.date.$gte = new Date(req.query.startDate);
+      dateFilter.date.$gte.setUTCHours(0, 0, 0, 0);
+    }
+    if (req.query.endDate) {
+      dateFilter.date.$lte = new Date(req.query.endDate);
+      dateFilter.date.$lte.setUTCHours(23, 59, 59, 999);
+    }
+  }
   const [totals, lastTransactions, categoryTotals, monthlyTotals] = await Promise.all([
     Transaction.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: dateFilter },
       { $group: { _id: '$type', total: { $sum: '$amount' } } }
     ]),
-    Transaction.find({ user: req.user._id }).sort({ date: -1, createdAt: -1 }).limit(5),
+    Transaction.find(dateFilter).sort({ date: -1, createdAt: -1 }).limit(5),
     Transaction.aggregate([
-      { $match: { user: req.user._id, type: 'expense' } },
+      { $match: { ...dateFilter, type: 'expense' } },
       { $group: { _id: '$category', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } }
     ]),

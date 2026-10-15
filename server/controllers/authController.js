@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { currencyCodes } = require('../constants/currencies');
+const { languageCodes } = require('../constants/languages');
 
 function createToken(userId) {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -9,7 +11,7 @@ function createToken(userId) {
 }
 
 function userResponse(user) {
-  return { id: user.id, name: user.name, email: user.email };
+  return { id: user.id, name: user.name, email: user.email, currency: user.currency || 'USD', language: user.language || 'en' };
 }
 
 async function register(req, res) {
@@ -41,4 +43,36 @@ function getMe(req, res) {
   return res.json({ user: userResponse(req.user) });
 }
 
-module.exports = { register, login, getMe };
+async function updateCurrency(req, res) {
+  if (!currencyCodes.includes(req.body.currency)) {
+    return res.status(400).json({ message: 'Choose a supported currency' });
+  }
+  req.user.currency = req.body.currency;
+  await req.user.save();
+  return res.json({ user: userResponse(req.user) });
+}
+
+async function updateLanguage(req, res) {
+  if (!languageCodes.includes(req.body.language)) {
+    return res.status(400).json({ message: 'Choose a supported language' });
+  }
+  req.user.language = req.body.language;
+  await req.user.save();
+  return res.json({ user: userResponse(req.user) });
+}
+
+async function changePassword(req, res) {
+  const user = await User.findById(req.user._id).select('+password');
+  if (!user || !(await bcrypt.compare(req.body.currentPassword, user.password))) {
+    return res.status(401).json({ message: 'Current password is incorrect' });
+  }
+  if (req.body.currentPassword === req.body.newPassword) {
+    return res.status(400).json({ message: 'Choose a new password different from your current one' });
+  }
+
+  user.password = await bcrypt.hash(req.body.newPassword, 12);
+  await user.save();
+  return res.json({ message: 'Password changed successfully' });
+}
+
+module.exports = { register, login, getMe, updateCurrency, updateLanguage, changePassword };

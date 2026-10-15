@@ -18,3 +18,41 @@ body {
 button, input {
   font: inherit;
 }
+
+html.dark {
+  color-scheme: dark;
+  background: #0f172a;
+}
+
+html.dark body {
+  color: #e2e8f0;
+  background: #0f172a;
+}
+
+html.dark #root .bg-slate-50 { background-color: #0f172a; }
+html.dark #root .bg-slate-100 { background-color: #1e293b; }
+html.dark #root .bg-white { background-color: #1e293b; }
+html.dark #root .bg-white\/90 { background-color: rgb(30 41 59 / 92%); }
+html.dark #root .text-slate-950,
+html.dark #root .text-slate-900 { color: #f8fafc; }
+html.dark #root .text-slate-800,
+html.dark #root .text-slate-700 { color: #e2e8f0; }
+html.dark #root .text-slate-600,
+html.dark #root .text-slate-500 { color: #cbd5e1; }
+html.dark #root .border-slate-100,
+html.dark #root .border-slate-200,
+html.dark #root .border-slate-300 { border-color: #334155; }
+html.dark #root .divide-slate-100 > :not(:last-child) { border-color: #334155; }
+html.dark #root .bg-rose-50 { background-color: #4c1d2b; }
+html.dark #root .text-rose-700 { color: #fda4af; }
+html.dark #root .text-rose-600 { color: #fda4af; }
+html.dark #root .text-amber-700 { color: #fcd34d; }
+html.dark #root .hover\:bg-slate-100:hover,
+html.dark #root .hover\:bg-slate-50:hover { background-color: #334155; }
+html.dark #root input,
+html.dark #root select,
+html.dark #root textarea { color-scheme: dark; }
+html.dark #root .recharts-default-tooltip { background-color: #1e293b !important; border-color: #475569 !important; }
+html.dark #root .recharts-tooltip-label,
+html.dark #root .recharts-tooltip-item,
+html.dark #root .recharts-legend-item-text { color: #e2e8f0 !important; }
