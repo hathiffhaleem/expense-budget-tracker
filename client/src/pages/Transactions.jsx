@@ -4,6 +4,7 @@ import api from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import useDatePeriod, { getPeriodDateRange } from '../context/DatePeriodContext.jsx';
 import useTranslation from '../i18n/useTranslation.js';
+import useAccessibleDialog from '../hooks/useAccessibleDialog.js';
 
 const emptyForm = { type: 'expense', amount: '', category: '', description: '', date: '' };
 
@@ -48,6 +49,7 @@ export default function Transactions() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const dialogRef = useAccessibleDialog(showForm, closeForm);
 
   useEffect(() => {
     api.get('/transactions/categories')
@@ -263,15 +265,16 @@ export default function Transactions() {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 px-5 py-4 text-sm text-slate-500">{t(total === 1 ? '{count} transaction' : '{count} transactions', { count: total })}</div>
         {loading ? (
-          <p className="p-6 text-sm text-slate-500">{t('Loading transactions…')}</p>
+          <p role="status" aria-live="polite" className="p-6 text-sm text-slate-500">{t('Loading transactions…')}</p>
         ) : transactions.length === 0 ? (
           <p className="p-6 text-sm text-slate-500">{t('No transactions found.')}</p>
         ) : (
           <>
             <div className="hidden overflow-x-auto xl:block">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">{t('Transactions')}</caption>
                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr><th className="px-5 py-3">{t('Date')}</th><th className="px-5 py-3">{t('Details')}</th><th className="px-5 py-3">{t('Type')}</th><th className="px-5 py-3 text-right">{t('Amount')}</th><th className="px-5 py-3 text-right">{t('Actions')}</th></tr>
+                  <tr><th scope="col" className="px-5 py-3">{t('Date')}</th><th scope="col" className="px-5 py-3">{t('Details')}</th><th scope="col" className="px-5 py-3">{t('Type')}</th><th scope="col" className="px-5 py-3 text-right">{t('Amount')}</th><th scope="col" className="px-5 py-3 text-right">{t('Actions')}</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {transactions.map((item) => (
@@ -281,8 +284,8 @@ export default function Transactions() {
                       <td className="px-5 py-4 capitalize text-slate-600">{t(item.type === 'income' ? 'Income' : 'Expense')}</td>
                       <td className={`whitespace-nowrap px-5 py-4 text-right font-semibold ${item.type === 'income' ? 'text-emerald-700' : 'text-slate-900'}`}>{item.type === 'income' ? '+' : '−'}{money.format(item.amount)}</td>
                       <td className="whitespace-nowrap px-5 py-4 text-right">
-                        <button onClick={() => openEdit(item)} className="mr-3 font-medium text-emerald-700 hover:text-emerald-900">{t('Edit')}</button>
-                        <button onClick={() => removeTransaction(item)} className="font-medium text-rose-600 hover:text-rose-800">{t('Delete')}</button>
+                        <button onClick={() => openEdit(item)} aria-label={`${t('Edit')} ${t(item.category)}`} className="mr-3 font-medium text-emerald-700 hover:text-emerald-900">{t('Edit')}</button>
+                        <button onClick={() => removeTransaction(item)} aria-label={`${t('Delete')} ${t(item.category)}`} className="font-medium text-rose-600 hover:text-rose-800">{t('Delete')}</button>
                       </td>
                     </tr>
                   ))}
@@ -296,7 +299,7 @@ export default function Transactions() {
                     <div className="min-w-0"><p className="truncate font-medium text-slate-900">{t(item.category)}</p><p className="mt-1 truncate text-xs text-slate-500">{item.description || t('No description')} · {new Date(item.date).toLocaleDateString(locale)}</p></div>
                     <span className={`whitespace-nowrap text-sm font-semibold ${item.type === 'income' ? 'text-emerald-700' : 'text-slate-900'}`}>{item.type === 'income' ? '+' : '−'}{money.format(item.amount)}</span>
                   </div>
-                  <div className="mt-3 flex gap-4 text-sm"><button onClick={() => openEdit(item)} className="font-medium text-emerald-700">{t('Edit')}</button><button onClick={() => removeTransaction(item)} className="font-medium text-rose-600">{t('Delete')}</button></div>
+                  <div className="mt-3 flex gap-4 text-sm"><button onClick={() => openEdit(item)} aria-label={`${t('Edit')} ${t(item.category)}`} className="font-medium text-emerald-700">{t('Edit')}</button><button onClick={() => removeTransaction(item)} aria-label={`${t('Delete')} ${t(item.category)}`} className="font-medium text-rose-600">{t('Delete')}</button></div>
                 </li>
               ))}
             </ul>
@@ -321,10 +324,12 @@ export default function Transactions() {
           }}
         >
           <form
+            ref={dialogRef}
             onSubmit={saveTransaction}
             role="dialog"
             aria-modal="true"
             aria-labelledby="transaction-form-title"
+            aria-busy={saving}
             className="flex h-dvh w-full flex-col bg-white shadow-xl sm:h-auto sm:max-h-[90dvh] sm:max-w-xl sm:rounded-2xl"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6 sm:py-4">
@@ -408,7 +413,7 @@ export default function Transactions() {
               </label>
 
               {formError && (
-                <p role="alert" className="rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
+                <p id="transaction-form-error" role="alert" className="rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
                   {formError}
                 </p>
               )}

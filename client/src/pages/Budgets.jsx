@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import useTranslation from '../i18n/useTranslation.js';
+import useAccessibleDialog from '../hooks/useAccessibleDialog.js';
 
 const currentMonth = () => {
   const date = new Date();
@@ -28,6 +29,14 @@ export default function Budgets() {
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  function closeForm() {
+    setShowForm(false);
+    setEditing(null);
+    setFormError('');
+  }
+
+  const dialogRef = useAccessibleDialog(showForm, closeForm);
 
   async function loadBudgets(selectedMonth = month) {
     setLoading(true);
@@ -79,8 +88,7 @@ export default function Budgets() {
       if (editing) await api.patch(`/budget/${editing._id}`, payload);
       else await api.post('/budget', payload);
       toast.success(t(editing ? 'Budget updated' : 'Budget added'));
-      setShowForm(false);
-      setEditing(null);
+      closeForm();
       await loadBudgets(month);
     } catch (error) {
       setFormError(message(error, t));
@@ -118,7 +126,7 @@ export default function Budgets() {
         <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5" />
       </label>
 
-      {loading ? <p className="text-sm text-slate-500">{t('Loading budgets…')}</p> : budgets.length === 0 ? (
+      {loading ? <p role="status" aria-live="polite" className="text-sm text-slate-500">{t('Loading budgets…')}</p> : budgets.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <p className="font-medium text-slate-900">{t('No budgets for this month yet.')}</p>
           <p className="mt-1 text-sm text-slate-500">{t('Set an overall or category budget to get started.')}</p>
@@ -138,7 +146,7 @@ export default function Budgets() {
                   </div>
                   <span className={`shrink-0 text-sm font-semibold ${textColor}`}>{percent}%</span>
                 </div>
-                <div role="progressbar" aria-label={`${t(budget.category || 'Overall spending')} ${t('budget used')}`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(percent, 100)} className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-100">
+                <div role="progressbar" aria-label={`${t(budget.category || 'Overall spending')} ${t('budget used')}`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(percent, 100)} aria-valuetext={`${percent}%`} className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-100">
                   <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(percent, 100)}%` }} />
                 </div>
                 <div className="mt-2 flex justify-between gap-2 text-xs text-slate-500">
@@ -146,8 +154,8 @@ export default function Budgets() {
                   <span>{percent >= 100 ? t('Over limit') : t('Left')}</span>
                 </div>
                 <div className="mt-4 flex gap-4 border-t border-slate-100 pt-4 text-sm">
-                  <button onClick={() => openEdit(budget)} className="font-medium text-emerald-700 hover:text-emerald-900">{t('Edit')}</button>
-                  <button onClick={() => deleteBudget(budget)} className="font-medium text-rose-600 hover:text-rose-800">{t('Delete')}</button>
+                  <button onClick={() => openEdit(budget)} aria-label={`${t('Edit')} ${t(budget.category || 'Overall spending')}`} className="font-medium text-emerald-700 hover:text-emerald-900">{t('Edit')}</button>
+                  <button onClick={() => deleteBudget(budget)} aria-label={`${t('Delete')} ${t(budget.category || 'Overall spending')}`} className="font-medium text-rose-600 hover:text-rose-800">{t('Delete')}</button>
                 </div>
               </article>
             );
@@ -156,11 +164,11 @@ export default function Budgets() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4" onMouseDown={(event) => event.target === event.currentTarget && setShowForm(false)}>
-          <form onSubmit={saveBudget} role="dialog" aria-modal="true" aria-labelledby="budget-form-title" className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4" onMouseDown={(event) => event.target === event.currentTarget && closeForm()}>
+          <form ref={dialogRef} onSubmit={saveBudget} role="dialog" aria-modal="true" aria-labelledby="budget-form-title" aria-busy={saving} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6">
             <div className="flex items-center justify-between">
               <h2 id="budget-form-title" className="text-xl font-bold text-slate-950">{t(editing ? 'Edit budget' : 'Set budget')}</h2>
-              <button type="button" onClick={() => setShowForm(false)} aria-label={t('Close form')} className="rounded-lg px-2 py-1 text-xl text-slate-500 hover:bg-slate-100">×</button>
+              <button type="button" onClick={closeForm} aria-label={t('Close form')} className="rounded-lg px-2 py-1 text-xl text-slate-500 hover:bg-slate-100">×</button>
             </div>
             <p className="mt-1 text-sm text-slate-500">{t('For')} {month}</p>
             <label className="mt-5 block text-sm font-medium text-slate-700">
@@ -174,9 +182,9 @@ export default function Budgets() {
               {t('Monthly limit')}
               <input type="number" min="0.01" step="0.01" required value={form.limit} onChange={(event) => setForm((current) => ({ ...current, limit: event.target.value }))} className="mt-1.5 block w-full rounded-xl border border-slate-200 px-3 py-2.5" />
             </label>
-            {formError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">{formError}</p>}
+            {formError && <p id="budget-form-error" role="alert" className="mt-4 rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">{formError}</p>}
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700">{t('Cancel')}</button>
+              <button type="button" onClick={closeForm} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700">{t('Cancel')}</button>
               <button disabled={saving} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? t('Saving') : t(editing ? 'Save changes' : 'Set budget')}</button>
             </div>
           </form>

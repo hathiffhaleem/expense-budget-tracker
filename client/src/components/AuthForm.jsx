@@ -35,7 +35,10 @@ export default function AuthForm({ mode }) {
     const nextErrors = validate();
     setErrors(nextErrors);
     setServerError('');
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {
+      requestAnimationFrame(() => document.querySelector(`[name="${Object.keys(nextErrors)[0]}"]`)?.focus());
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -69,37 +72,38 @@ export default function AuthForm({ mode }) {
   const inputClass = (field, margin = true) => `${margin ? 'mt-1.5 ' : ''}w-full rounded-xl border bg-white px-3.5 py-3 text-sm outline-none transition focus:ring-4 ${errors[field] ? 'border-rose-400 focus:ring-rose-100' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-100'}`;
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-100 px-4 py-10">
+    <main id="auth-main" tabIndex="-1" className="grid min-h-screen place-items-center bg-slate-100 px-4 py-10">
+      <a className="skip-link" href="#auth-heading">{t('Skip to main content')}</a>
       <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60 sm:p-9">
         <Link to="/login" className="mb-8 flex items-center gap-3">
           <MoneyMapLogo dark iconClassName="size-11" />
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-950">
+        <h1 id="auth-heading" tabIndex="-1" className="text-2xl font-bold tracking-tight text-slate-950">
           {t(isRegister ? 'Create your account' : 'Welcome back')}
         </h1>
         <p className="mt-2 text-sm text-slate-500">
           {t(isRegister ? 'Start organizing your money today.' : 'Sign in to manage your money.')}
         </p>
 
-        <form className="mt-7 space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="mt-7 space-y-4" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
           {isRegister && (
             <label className="block text-sm font-medium text-slate-700">
               {t('Name')}
-              <input name="name" value={form.name} onChange={updateField} autoComplete="name" className={inputClass('name')} />
-              {errors.name && <span className="mt-1 block text-xs text-rose-600">{errors.name}</span>}
+              <input id="name" name="name" value={form.name} onChange={updateField} autoComplete="name" required aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'name-error' : undefined} className={inputClass('name')} />
+              {errors.name && <span id="name-error" className="mt-1 block text-xs text-rose-600">{errors.name}</span>}
             </label>
           )}
 
           <label className="block text-sm font-medium text-slate-700">
               {t('Email')}
-            <input name="email" type="email" value={form.email} onChange={updateField} autoComplete="email" className={inputClass('email')} />
-            {errors.email && <span className="mt-1 block text-xs text-rose-600">{errors.email}</span>}
+            <input id="email" name="email" type="email" value={form.email} onChange={updateField} autoComplete="email" required aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'email-error' : undefined} className={inputClass('email')} />
+            {errors.email && <span id="email-error" className="mt-1 block text-xs text-rose-600">{errors.email}</span>}
           </label>
 
           <label className="block text-sm font-medium text-slate-700">
             {t('Password')}
             <div className="relative mt-1.5">
-              <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={updateField} autoComplete={isRegister ? 'new-password' : 'current-password'} className={`${inputClass('password', false)} pr-12`} />
+              <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={updateField} autoComplete={isRegister ? 'new-password' : 'current-password'} required aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'password-error' : undefined} className={`${inputClass('password', false)} pr-12`} />
               <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={t(showPassword ? 'Hide password' : 'Show password')} aria-pressed={showPassword} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 {showPassword ? (
                   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5">
@@ -113,7 +117,7 @@ export default function AuthForm({ mode }) {
                 )}
               </button>
             </div>
-            {errors.password && <span className="mt-1 block text-xs text-rose-600">{errors.password}</span>}
+            {errors.password && <span id="password-error" className="mt-1 block text-xs text-rose-600">{errors.password}</span>}
           </label>
 
           {serverError && <p role="alert" className="rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">{serverError}</p>}

@@ -86,7 +86,7 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-500">{t('Loading dashboard…')}</p>
+        <p role="status" aria-live="polite" className="text-sm text-slate-500">{t('Loading dashboard…')}</p>
       ) : dashboard && (
         <>
           <section className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,7 +105,7 @@ export default function Dashboard() {
                 <div className="mt-4 grid min-w-0 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(140px,0.9fr)]">
                   <div className="relative h-60 min-w-0">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <PieChart aria-hidden="true">
                         <Pie data={categoryData} dataKey="total" nameKey="category" cx="50%" cy="50%" innerRadius="58%" outerRadius="88%" paddingAngle={3} cornerRadius={5} stroke="white" strokeWidth={3}>
                           {categoryData.map((item, index) => <Cell key={`${item.category}-${index}`} fill={item.color} />)}
                         </Pie>
@@ -120,8 +120,9 @@ export default function Dashboard() {
                   <ul className="max-h-60 min-w-0 space-y-1.5 overflow-y-auto pr-1">
                     {categoryData.map((item, index) => (
                       <li key={`${item.category}-${index}`} className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-slate-50">
-                        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
                         <span className="min-w-0 flex-1 truncate text-slate-600">{item.category}</span>
+                        <span className="sr-only">{money.format(item.total)}</span>
                         <span className="shrink-0 text-xs font-semibold text-slate-900">{categoryTotal ? `${Math.round(item.total / categoryTotal * 100)}%` : '0%'}</span>
                       </li>
                     ))}
@@ -133,18 +134,29 @@ export default function Dashboard() {
             <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <h2 className="font-semibold text-slate-900">{t('Income vs expenses')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('Last 6 months')}</p>
-              <div className="mt-4 h-72 w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboard.monthlyIncomeVsExpense || []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tickFormatter={(value) => monthLabel(value, locale)} tickLine={false} axisLine={false} />
-                    <YAxis tickFormatter={(value) => compactMoney.format(value)} tickLine={false} axisLine={false} width={64} />
-                    <Tooltip labelFormatter={(value) => monthLabel(value, locale)} formatter={(value) => money.format(value)} />
-                    <Legend />
-                    <Bar dataKey="income" name={t('Income')} fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="expense" name={t('Expenses')} fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="mt-4 w-full min-w-0">
+                <table className="sr-only">
+                  <caption>{t('Income vs expenses')} — {t('Last 6 months')}</caption>
+                  <thead><tr><th scope="col">{t('Month')}</th><th scope="col">{t('Income')}</th><th scope="col">{t('Expenses')}</th></tr></thead>
+                  <tbody>
+                    {(dashboard.monthlyIncomeVsExpense || []).map((item) => (
+                      <tr key={item.month}><th scope="row">{monthLabel(item.month, locale)}</th><td>{money.format(item.income)}</td><td>{money.format(item.expense)}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div aria-hidden="true" className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dashboard.monthlyIncomeVsExpense || []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="month" tickFormatter={(value) => monthLabel(value, locale)} tickLine={false} axisLine={false} />
+                      <YAxis tickFormatter={(value) => compactMoney.format(value)} tickLine={false} axisLine={false} width={64} />
+                      <Tooltip labelFormatter={(value) => monthLabel(value, locale)} formatter={(value) => money.format(value)} />
+                      <Legend />
+                      <Bar dataKey="income" name={t('Income')} fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="expense" name={t('Expenses')} fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </article>
           </section>

@@ -15,6 +15,28 @@ body {
   margin: 0;
 }
 
+:focus-visible {
+  outline: 3px solid #059669;
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  border-radius: 0.75rem;
+  background: #064e3b;
+  color: white;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 button, input {
   font: inherit;
 }
@@ -47,6 +69,8 @@ html.dark #root .bg-rose-50 { background-color: #4c1d2b; }
 html.dark #root .text-rose-700 { color: #fda4af; }
 html.dark #root .text-rose-600 { color: #fda4af; }
 html.dark #root .text-amber-700 { color: #fcd34d; }
+html.dark #root .text-emerald-700 { color: #6ee7b7; }
+html.dark #root .text-emerald-900 { color: #a7f3d0; }
 html.dark #root .hover\:bg-slate-100:hover,
 html.dark #root .hover\:bg-slate-50:hover { background-color: #334155; }
 html.dark #root input,
@@ -56,3 +80,14 @@ html.dark #root .recharts-default-tooltip { background-color: #1e293b !important
 html.dark #root .recharts-tooltip-label,
 html.dark #root .recharts-tooltip-item,
 html.dark #root .recharts-legend-item-text { color: #e2e8f0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
